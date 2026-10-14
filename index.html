@@ -199,7 +199,7 @@
     const SECRET_KEY_STORAGE = "vana_secret_key";
 
     let appState = { stocks: {}, history: [] };
-    let isInitialized = false;
+    let isGridBuilt = false;
 
     function initApp() {
       if (localStorage.getItem("vana_theme") === "dark") document.documentElement.classList.add("dark");
@@ -220,11 +220,16 @@
         document.getElementById("loginFirebaseUrl").value = getCloudUrl();
       }
 
+      // Arka plan senkronizasyonu: Kullanıcı herhangi bir inputa yazıyorsa ekranı yenileme (focus engellenmez)
       setInterval(() => {
         if (localStorage.getItem(SECRET_KEY_STORAGE) && getCloudUrl()) {
-          fetchFromCloud(true);
+          const activeEl = document.activeElement;
+          const isWriting = activeEl && activeEl.tagName === 'INPUT';
+          if (!isWriting) {
+            fetchFromCloud(true);
+          }
         }
-      }, 10000);
+      }, 8000);
     }
 
     function handleUnlock(e) {
@@ -271,7 +276,6 @@
         } catch (e) {}
       }
       renderAll();
-      isInitialized = true;
 
       if (getSecretEndpoint()) await fetchFromCloud();
       else updateSyncIndicator(false);
@@ -285,6 +289,10 @@
         if (!res.ok) throw new Error();
         const data = await res.json();
         if (data && data.stocks) {
+          // Kullanıcı şu an inputa yazıyorsa buluttan gelen veri anlık arayüzü ezmesin
+          const activeEl = document.activeElement;
+          if (activeEl && activeEl.tagName === 'INPUT') return;
+
           VALVE_SIZES.forEach(size => { appState.stocks[size] = Number(data.stocks[size]) || 0; });
           appState.history = Array.isArray(data.history) ? data.history : [];
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
@@ -404,6 +412,14 @@
     }
 
     function renderAll() {
+      // Kullanıcı herhangi bir input kutusuna yazıyorsa grid yapısını (HTML'i) baştan kurma, sadece sayıları güncelle
+      const activeEl = document.activeElement;
+      if (activeEl && activeEl.tagName === 'INPUT' && activeEl.id.startsWith('input-')) {
+        // Sadece özet rakamları güncelle
+        updateDashboardNumbers();
+        return;
+      }
+
       let total = 0, activeSizes = 0, zeroSizes = 0;
       VALVE_SIZES.forEach(size => {
         const count = appState.stocks[size] || 0;
@@ -424,10 +440,6 @@
         const isZero = count === 0;
         const badgeClass = isZero ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700";
 
-        // Kullanıcı input yazarken kutunun sıfırlanmaması için mevcut değeri koruyoruz
-        const existingInput = document.getElementById(`input-${safeId}`);
-        const savedVal = existingInput ? existingInput.value : "";
-
         grid.innerHTML += `
           <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm flex flex-col justify-between">
             <div>
@@ -444,7 +456,7 @@
               </div>
             </div>
             <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-2.5">
-              <input type="number" id="input-${safeId}" min="1" value="${savedVal}" placeholder="Miktar girin..." class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <input type="number" id="input-${safeId}" min="1" placeholder="Miktar girin..." class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
               <div class="grid grid-cols-2 gap-2">
                 <button onclick="handleQuickAction('${size}', 'in')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition">
                   <i data-lucide="plus" class="w-4 h-4"></i><span>Arttır</span>
@@ -459,6 +471,19 @@
 
       renderHistory();
       lucide.createIcons();
+    }
+
+    function updateDashboardNumbers() {
+      let total = 0, activeSizes = 0, zeroSizes = 0;
+      VALVE_SIZES.forEach(size => {
+        const count = appState.stocks[size] || 0;
+        total += count;
+        if (count > 0) activeSizes++; else zeroSizes++;
+      });
+      document.getElementById("totalStockCount").textContent = total.toLocaleString("tr-TR");
+      document.getElementById("activeSizesCount").textContent = `${activeSizes} / ${VALVE_SIZES.length}`;
+      document.getElementById("zeroStockCount").textContent = zeroSizes;
+      document.getElementById("totalTransactions").textContent = appState.history.length;
     }
 
     function renderHistory() {
@@ -497,7 +522,7 @@
 
     function exportToCSV() {
       let csv = "\uFEFFVANA GÜNCEL STOK DURUMU\nVana Boyutu;Güncel Adet\n";
-      VALVE_SIZES.forEach(s => { csv += `${s};${appState.stocks[s] || 0}\n`; });
+      VALVE_SIZES.VALVE_SIZES.forEach(s => { csv += `${s};${appState.stocks[s] || 0}\n`; });
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -511,6 +536,7 @@
     }
 
     let toastTimeout;
+    function functionShowToast(msg) {} // Yedeği korumak için
     function showToast(msg) {
       const toast = document.getElementById("toast");
       document.getElementById("toastMessage").textContent = msg;
