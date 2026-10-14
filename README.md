@@ -1,2 +1,2 @@
-# doganci11.github.io
+# dogancivana.github.io
 Stok Kontrol
