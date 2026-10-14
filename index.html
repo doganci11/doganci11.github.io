@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="tr" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Vana Depo & Stok Yönetim Sistemi</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+  <!-- Üst Menü (Header) -->
+  <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm">
+          <i data-lucide="settings-2" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight leading-none">Vana Stok Yönetimi</h1>
+          <div class="flex items-center gap-2 mt-1">
+            <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="syncStatusText" class="text-xs text-slate-500 dark:text-slate-400">Yerel Hafıza Aktif</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Bulut Senkronizasyon Ayarı -->
+        <button onclick="openCloudModal()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 transition" title="PC ve Telefon Senkronizasyonu">
+          <i data-lucide="cloud" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+          <span class="hidden sm:inline">Senkronizasyon</span>
+        </button>
+
+        <!-- Excel (CSV) İndir -->
+        <button onclick="exportToCSV()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition" title="Excel Raporu İndir">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Excel İndir</span>
+        </button>
+
+        <!-- Tema Değiştirici -->
+        <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 transition" title="Göz Rahatlığı Modu (Açık/Koyu)">
+          <i data-lucide="moon" id="themeIcon" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Ana İçerik -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+    <!-- Özet Kartları (Dashboard) -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
+          <span>Toplam Vana Stoğu</span>
+          <i data-lucide="package" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+        </div>
+        <p id="totalStockCount" class="text-2xl sm:text-3xl font-bold mt-2">0</p>
+        <p class="text-xs text-slate-400 mt-1">Tüm boyutların toplamı</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
+          <span>Stokta Olan Boyutlar</span>
+          <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
+        </div>
+        <p id="activeSizesCount" class="text-2xl sm:text-3xl font-bold mt-2">0 / 8</p>
+        <p class="text-xs text-slate-400 mt-1">Adedi sıfırdan büyük olanlar</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
+          <span>Tükenen Boyutlar</span>
+          <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500"></i>
+        </div>
+        <p id="zeroStockCount" class="text-2xl sm:text-3xl font-bold mt-2 text-amber-600 dark:text-amber-400">8</p>
+        <p class="text-xs text-slate-400 mt-1">Stokta 0 adet olanlar</p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
+          <span>Toplam Hareket</span>
+          <i data-lucide="history" class="w-5 h-5 text-indigo-500"></i>
+        </div>
+        <p id="totalTransactions" class="text-2xl sm:text-3xl font-bold mt-2">0</p>
+        <p id="lastUpdateText" class="text-xs text-slate-400 mt-1 truncate">Henüz işlem yapılmadı</p>
+      </div>
+    </section>
+
+    <!-- Vana Boyutları Grid Alanı -->
+    <section>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div>
+          <h2 class="text-lg font-bold">Vana Boyutları ve Hızlı Stok Güncelleme</h2>
+          <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">İlgili vana boyutunun altındaki kutuya adet yazıp <b>+ Giriş</b> veya <b>- Çıkış</b> yapabilirsiniz.</p>
+        </div>
+      </div>
+
+      <div id="valveGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- JS ile DN 40 - DN 200 kartları buraya yüklenecek -->
+      </div>
+    </section>
+
+    <!-- Açıklamalı Stok Hareketi & Geçmiş Bölümü -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Sol: Detaylı / Notlu İşlem Formu -->
+      <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm h-fit">
+        <div class="flex items-center gap-2 mb-4">
+          <i data-lucide="clipboard-list" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+          <h3 class="font-bold text-base">Açıklamalı Stok İşlemi</h3>
+        </div>
+        <form id="detailedForm" onsubmit="handleDetailedSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Vana Boyutu</label>
+            <select id="formSize" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <!-- JS ile doldurulacak -->
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">İşlem Türü</label>
+              <select id="formType" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="in">Stok Girişi (+)</option>
+                <option value="out">Stok Çıkışı (-)</option>
+                <option value="set">Sayım Sabitle (=)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Adet</label>
+              <input type="number" id="formAmount" min="0" required placeholder="Örn: 25" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Açıklama / Firma / Not (İsteğe Bağlı)</label>
+            <input type="text" id="formNote" placeholder="Örn: X Firması sevkiyatı, Üretimden giriş..." class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+
+          <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-sm">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Stok Hareketini Kaydet</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Sağ: Stok Hareket Geçmişi (Log Tablosu) -->
+      <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="list-ordered" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+            <h3 class="font-bold text-base">Son Stok Hareketleri</h3>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="filterHistorySize" onchange="renderHistory()" class="rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-1.5 text-xs font-medium focus:outline-none">
+              <option value="ALL">Tüm Boyutlar</option>
+            </select>
+            <button onclick="clearHistory()" class="text-xs text-rose-600 dark:text-rose-400 hover:underline px-2 py-1">Geçmişi Temizle</button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto flex-1">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                <th class="py-3 px-3">Tarih / Saat</th>
+                <th class="py-3 px-3">Boyut</th>
+                <th class="py-3 px-3">İşlem</th>
+                <th class="py-3 px-3">Kalan Stok</th>
+                <th class="py-3 px-3">Açıklama</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody" class="divide-y divide-slate-200 dark:divide-slate-700/60 text-sm">
+              <!-- JS ile doldurulacak -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Bildirim (Toast) -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden transform transition-all duration-300 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5 text-sm font-medium">
+    <span id="toastMessage">İşlem başarılı</span>
+  </div>
+
+  <!-- Bulut Senkronizasyon Modalı -->
+  <div id="cloudModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-700 shadow-xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-lg flex items-center gap-2">
+          <i data-lucide="cloud" class="w-5 h-5 text-blue-600"></i>
+          <span>PC & Telefon Ortak Veri Ayarı</span>
+        </h3>
+        <button onclick="closeCloudModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+        PC ve telefonların aynı anda ortak veritabanını görmesi için ücretsiz bir <b>Firebase Realtime Database URL</b>'si girebilirsiniz. Boş bırakırsanız veriler bu cihazın kendi hafızasında (Local Storage) tutulur.
+      </p>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Firebase Database URL</label>
+        <input type="url" id="firebaseUrlInput" placeholder="https://ornek-proje-default-rtdb.europe-west1.firebasedatabase.app" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeCloudModal()" class="px-4 py-2 rounded-xl text-sm font-medium bg-slate-100 dark:bg-slate-700">İptal</button>
+        <button onclick="saveCloudConfig()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700">Kaydet ve Bağlan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Vana Boyutları Sabiti (Başlangıçta hepsi 0)
+    const VALVE_SIZES = ["DN 40", "DN 50", "DN 65", "DN 80", "DN 100", "DN 125", "DN 150", "DN 200"];
+    const STORAGE_KEY = "vana_stok_verisi_v1";
+    const CLOUD_URL_KEY = "vana_firebase_url";
+
+    let appState = {
+      stocks: {},
+      history: []
+    };
+
+    // Başlangıç Kurulumu
+    function initApp() {
+      // Tema kontrolü
+      if (localStorage.getItem("vana_theme") === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+      
+      // Varsayılan 0 değerlerini oluştur
+      VALVE_SIZES.forEach(size => {
+        appState.stocks[size] = 0;
+      });
+
+      // Select menülerini doldur
+      const formSizeSelect = document.getElementById("formSize");
+      const filterSelect = document.getElementById("filterHistorySize");
+      VALVE_SIZES.forEach(size => {
+        formSizeSelect.innerHTML += `<option value="${size}">${size}</option>`;
+        filterSelect.innerHTML += `<option value="${size}">${size}</option>`;
+      });
+
+      loadData();
+      lucide.createIcons();
+
+      // Eğer bulut bağlantısı aktifse her 10 saniyede bir senkronize et
+      setInterval(() => {
+        if (getCloudUrl()) fetchFromCloud(true);
+      }, 10000);
+    }
+
+    function getCloudUrl() {
+      const url = localStorage.getItem(CLOUD_URL_KEY);
+      return url ? url.trim().replace(/\/$/, "") : "";
+    }
+
+    // Verileri Yükle (Yerel veya Bulut)
+    async function loadData() {
+      const savedLocal = localStorage.getItem(STORAGE_KEY);
+      if (savedLocal) {
+        try {
+          const parsed = JSON.parse(savedLocal);
+          VALVE_SIZES.forEach(size => {
+            appState.stocks[size] = Number(parsed.stocks?.[size]) || 0;
+          });
+          appState.history = Array.isArray(parsed.history) ? parsed.history : [];
+        } catch (e) {
+          console.error("Veri okuma hatası:", e);
+        }
+      }
+      renderAll();
+
+      if (getCloudUrl()) {
+        await fetchFromCloud();
+      }
+    }
+
+    // Buluttan Veri Çek
+    async function fetchFromCloud(silent = false) {
+      const baseUrl = getCloudUrl();
+      if (!baseUrl) return;
+
+      try {
+        const res = await fetch(`${baseUrl}/vana_stok.json`);
+        if (!res.ok) throw new Error("Bağlantı hatası");
+        const data = await res.json();
+        if (data && data.stocks) {
+          VALVE_SIZES.forEach(size => {
+            appState.stocks[size] = Number(data.stocks[size]) || 0;
+          });
+          appState.history = Array.isArray(data.history) ? data.history : [];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+          renderAll();
+        } else {
+          // Bulut boşsa mevcut veriyi buluta yaz
+          await pushToCloud();
+        }
+        updateSyncIndicator(true);
+      } catch (err) {
+        updateSyncIndicator(false, true);
+        if (!silent) showToast("Bulut sunucusuna bağlanılamadı, yerel mod kullanılıyor.");
+      }
+    }
+
+    // Buluta Veri Gönder
+    async function pushToCloud() {
+      const baseUrl = getCloudUrl();
+      if (!baseUrl) return;
+      try {
+        await fetch(`${baseUrl}/vana_stok.json`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(appState)
+        });
+        updateSyncIndicator(true);
+      } catch (err) {
+        updateSyncIndicator(false, true);
+      }
+    }
+
+    function updateSyncIndicator(isCloud, hasError = false) {
+      const dot = document.getElementById("syncStatusDot");
+      const text = document.getElementById("syncStatusText");
+      if (hasError) {
+        dot.className = "w-2 h-2 rounded-full bg-rose-500";
+        text.textContent = "Bulut Bağlantı Hatası (Yerel Kayıt)";
+      } else if (isCloud) {
+        dot.className = "w-2 h-2 rounded-full bg-blue-500 animate-pulse";
+        text.textContent = "Bulut Senkronizasyonu Aktif (PC & Mobil)";
+      } else {
+        dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        text.textContent = "Yerel Hafıza Aktif";
+      }
+    }
+
+    // Verileri Kaydet
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      if (getCloudUrl()) {
+        pushToCloud();
+      }
+      renderAll();
+    }
+
+    // Stok Güncelleme Ana Fonksiyonu
+    function updateStock(size, type, amount, note = "") {
+      amount = parseInt(amount, 10);
+      if (isNaN(amount) || amount < 0) {
+        showToast("Lütfen geçerli bir adet girin!");
+        return false;
+      }
+      if ((type === "in" || type === "out") && amount === 0) {
+        showToast("Lütfen 0'dan büyük bir adet girin!");
+        return false;
+      }
+
+      const currentQty = appState.stocks[size] || 0;
+      let newQty = currentQty;
+
+      if (type === "in") {
+        newQty = currentQty + amount;
+      } else if (type === "out") {
+        if (amount > currentQty) {
+          showToast(`Hata: ${size} stoğunda sadece ${currentQty} adet var! Eksiye düşülemez.`);
+          return false;
+        }
+        newQty = currentQty - amount;
+      } else if (type === "set") {
+        newQty = amount;
+      }
+
+      appState.stocks[size] = newQty;
+
+      // Geçmişe ekle
+      const now = new Date();
+      const formattedDate = now.toLocaleDateString("tr-TR") + " " + now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+
+      appState.history.unshift({
+        id: Date.now(),
+        date: formattedDate,
+        size: size,
+        type: type,
+        amount: amount,
+        remaining: newQty,
+        note: note || (type === "in" ? "Hızlı Stok Girişi" : type === "out" ? "Hızlı Stok Çıkışı" : "Stok Sayım Düzeltmesi")
+      });
+
+      // Geçmişi maksimum 200 kayıtla sınırla
+      if (appState.history.length > 200) {
+        appState.history.pop();
+      }
+
+      saveData();
+      showToast(`${size} stoğu güncellendi: ${newQty} Adet`);
+      return true;
+    }
+
+    // Hızlı Kart Butonu İşlemi
+    function handleQuickAction(size, type) {
+      const inputId = `input-${size.replace(" ", "-")}`;
+      const inputEl = document.getElementById(inputId);
+      const val = parseInt(inputEl.value, 10);
+
+      if (isNaN(val) || val <= 0) {
+        showToast("Lütfen eklenecek veya düşülecek adedi girin.");
+        inputEl.focus();
+        return;
+      }
+
+      if (updateStock(size, type, val)) {
+        inputEl.value = "";
+      }
+    }
+
+    // Doğrudan Sayım / Başlangıç Değeri Belirleme
+    function promptSetStock(size) {
+      const current = appState.stocks[size] || 0;
+      const input = prompt(`${size} için yeni net stok adedini girin (Mevcut: ${current}):`, current);
+      if (input !== null && input.trim() !== "") {
+        const val = parseInt(input, 10);
+        if (!isNaN(val) && val >= 0) {
+          updateStock(size, "set", val, "Manuel Stok Sabitleme");
+        } else {
+          showToast("Geçersiz sayı girdiniz!");
+        }
+      }
+    }
+
+    // Detaylı Form Gönderimi
+    function handleDetailedSubmit(e) {
+      e.preventDefault();
+      const size = document.getElementById("formSize").value;
+      const type = document.getElementById("formType").value;
+      const amount = document.getElementById("formAmount").value;
+      const note = document.getElementById("formNote").value.trim();
+
+      if (updateStock(size, type, amount, note)) {
+        document.getElementById("formAmount").value = "";
+        document.getElementById("formNote").value = "";
+      }
+    }
+
+    // Arayüzü Çiz
+    function renderAll() {
+      renderDashboard();
+      renderValveGrid();
+      renderHistory();
+      lucide.createIcons();
+    }
+
+    function renderDashboard() {
+      let total = 0;
+      let activeSizes = 0;
+      let zeroSizes = 0;
+
+      VALVE_SIZES.forEach(size => {
+        const count = appState.stocks[size] || 0;
+        total += count;
+        if (count > 0) activeSizes++;
+        else zeroSizes++;
+      });
+
+      document.getElementById("totalStockCount").textContent = total.toLocaleString("tr-TR");
+      document.getElementById("activeSizesCount").textContent = `${activeSizes} / ${VALVE_SIZES.length}`;
+      document.getElementById("zeroStockCount").textContent = zeroSizes;
+      document.getElementById("totalTransactions").textContent = appState.history.length;
+
+      if (appState.history.length > 0) {
+        const last = appState.history[0];
+        document.getElementById("lastUpdateText").textContent = `Son: ${last.size} (${last.date})`;
+      } else {
+        document.getElementById("lastUpdateText").textContent = "Henüz işlem yapılmadı";
+      }
+    }
+
+    function renderValveGrid() {
+      const grid = document.getElementById("valveGrid");
+      grid.innerHTML = "";
+
+      VALVE_SIZES.forEach(size => {
+        const count = appState.stocks[size] || 0;
+        const safeId = size.replace(" ", "-");
+        const isZero = count === 0;
+
+        const badgeClass = isZero
+          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300";
+
+        const badgeText = isZero ? "Stok Yok" : "Stokta Mevcut";
+
+        grid.innerHTML += `
+          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-bold tracking-tight text-blue-600 dark:text-blue-400">${size}</span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeClass}">${badgeText}</span>
+                  <button onclick="promptSetStock('${size}')" class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" title="Stok Adedini Doğrudan Belirle">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="my-4 flex items-baseline gap-2">
+                <span class="text-4xl font-extrabold tracking-tight">${count.toLocaleString("tr-TR")}</span>
+                <span class="text-xs font-medium text-slate-400 uppercase">Adet</span>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-2.5">
+              <input
+                type="number"
+                id="input-${safeId}"
+                min="1"
+                placeholder="Miktar girin..."
+                class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  onclick="handleQuickAction('${size}', 'in')"
+                  class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold text-xs sm:text-sm shadow-sm transition"
+                >
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  <span>Arttır</span>
+                </button>
+                <button
+                  onclick="handleQuickAction('${size}', 'out')"
+                  class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-semibold text-xs sm:text-sm shadow-sm transition"
+                >
+                  <i data-lucide="minus" class="w-4 h-4"></i>
+                  <span>Azalt</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function renderHistory() {
+      const tbody = document.getElementById("historyTableBody");
+      const filterSize = document.getElementById("filterHistorySize").value;
+      tbody.innerHTML = "";
+
+      const filtered = filterSize === "ALL"
+        ? appState.history
+        : appState.history.filter(item => item.size === filterSize);
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-8 text-center text-slate-400 text-sm">
+              Kayıtlı stok hareketi bulunmuyor.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      filtered.slice(0, 50).forEach(item => {
+        let badge = "";
+        if (item.type === "in") {
+          badge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">+${item.amount} Giriş</span>`;
+        } else if (item.type === "out") {
+          badge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">-${item.amount} Çıkış</span>`;
+        } else {
+          badge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">=${item.amount} Sabitlendi</span>`;
+        }
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/30 transition">
+            <td class="py-3 px-3 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">${item.date}</td>
+            <td class="py-3 px-3 font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">${item.size}</td>
+            <td class="py-3 px-3 whitespace-nowrap">${badge}</td>
+            <td class="py-3 px-3 font-semibold whitespace-nowrap">${item.remaining} Adet</td>
+            <td class="py-3 px-3 text-xs text-slate-600 dark:text-slate-300">${item.note}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function clearHistory() {
+      if (confirm("Stok adetleriniz silinmeden sadece işlem geçmişi (loglar) temizlenecek. Onaylıyor musunuz?")) {
+        appState.history = [];
+        saveData();
+        showToast("İşlem geçmişi temizlendi.");
+      }
+    }
+
+    // Excel (CSV) Olarak İndirme
+    function exportToCSV() {
+      let csvContent = "\uFEFF"; // Türkçe karakterler için UTF-8 BOM
+      csvContent += "VANA GÜNCEL STOK DURUMU\n";
+      csvContent += "Vana Boyutu;Güncel Adet\n";
+
+      VALVE_SIZES.forEach(size => {
+        csvContent += `${size};${appState.stocks[size] || 0}\n`;
+      });
+
+      csvContent += "\nSTOK HAREKET GEÇMİŞİ\n";
+      csvContent += "Tarih;Boyut;İşlem Türü;Miktar;Kalan Stok;Açıklama\n";
+
+      appState.history.forEach(h => {
+        const typeStr = h.type === "in" ? "Giriş (+)" : h.type === "out" ? "Çıkış (-)" : "Sabitleme (=)";
+        csvContent += `${h.date};${h.size};${typeStr};${h.amount};${h.remaining};${h.note}\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const today = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `Vana_Stok_Raporu_${today}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("Excel (CSV) raporu indirildi.");
+    }
+
+    // Bulut Modal Kontrolleri
+    function openCloudModal() {
+      document.getElementById("firebaseUrlInput").value = getCloudUrl();
+      document.getElementById("cloudModal").classList.remove("hidden");
+    }
+
+    function closeCloudModal() {
+      document.getElementById("cloudModal").classList.add("hidden");
+    }
+
+    function saveCloudConfig() {
+      const val = document.getElementById("firebaseUrlInput").value.trim();
+      if (val) {
+        localStorage.setItem(CLOUD_URL_KEY, val);
+        fetchFromCloud();
+        showToast("Bulut senkronizasyonu aktif edildi!");
+      } else {
+        localStorage.removeItem(CLOUD_URL_KEY);
+        updateSyncIndicator(false);
+        showToast("Yerel hafıza moduna geçildi.");
+      }
+      closeCloudModal();
+    }
+
+    // Açık / Koyu Tema Değiştirici
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.toggle("dark");
+      const isDark = html.classList.contains("dark");
+      localStorage.setItem("vana_theme", isDark ? "dark" : "light");
+    }
+
+    // Bildirim Gösterimi
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      document.getElementById("toastMessage").textContent = msg;
+      toast.classList.remove("hidden");
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add("hidden");
+      }, 3000);
+    }
+
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
