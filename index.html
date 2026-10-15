@@ -22,7 +22,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-200">
 
-  <!-- KİLİT EKRANI (ŞİFRELİ GİRİŞ) -->
+  <!-- KİLİT EKRANI -->
   <div id="lockScreen" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-md w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-700 shadow-2xl space-y-5">
       <div class="flex flex-col items-center text-center">
@@ -30,28 +30,17 @@
           <i data-lucide="shield-lock" class="w-7 h-7"></i>
         </div>
         <h2 class="text-xl font-bold text-slate-900 dark:text-white">Yetkili Personel Girişi</h2>
-        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Stok verilerine erişmek ve işlem yapmak için şirket bağlantı bilgilerinizi girin.
-        </p>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Stok verilerine erişmek için giriş yapın.</p>
       </div>
-
       <form onsubmit="handleUnlock(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-            Şirket Kasası Şifresi (Zorunlu)
-          </label>
-          <input type="password" id="loginSecretKey" required minlength="4" placeholder="Örn: SirketVana2026" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <p class="text-[11px] text-slate-400 mt-1">Sadece yetkili 1-2 kişinin bildiği ortak bir şifre belirleyin.</p>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Şirket Kasası Şifresi</label>
+          <input type="password" id="loginSecretKey" required placeholder="Şifrenizi girin" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
-
         <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-            Firebase Database URL (PC & Mobil Eşitleme)
-          </label>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Firebase Database URL</label>
           <input type="url" id="loginFirebaseUrl" placeholder="https://...-default-rtdb.firebaseio.com" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <p class="text-[11px] text-slate-400 mt-1">Boş bırakırsanız sadece bu cihazın kendi hafızasında çalışır.</p>
         </div>
-
         <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
           <i data-lucide="key-round" class="w-4 h-4"></i>
           <span>Sistemi Aç ve Bağlan</span>
@@ -60,7 +49,7 @@
     </div>
   </div>
 
-  <!-- Üst Menü (Header) -->
+  <!-- Üst Menü -->
   <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
@@ -71,25 +60,19 @@
           <h1 class="text-lg font-bold tracking-tight leading-none">Vana Stok Yönetimi</h1>
           <div class="flex items-center gap-2 mt-1">
             <span id="syncStatusDot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span id="syncStatusText" class="text-xs text-slate-500 dark:text-slate-400">Şifreli Kasa Aktif</span>
+            <span id="syncStatusText" class="text-xs text-slate-500 dark:text-slate-400">Sistem Aktif</span>
           </div>
         </div>
       </div>
-
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Excel (CSV) İndir -->
-        <button onclick="exportToCSV()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 transition" title="Excel Raporu İndir">
+        <button onclick="exportToCSV()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-300 transition">
           <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Excel İndir</span>
         </button>
-
-        <!-- Tema Değiştirici -->
-        <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 transition" title="Açık/Koyu Mod">
+        <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 transition">
           <i data-lucide="moon" class="w-5 h-5"></i>
         </button>
-
-        <!-- Kilitle / Çıkış Yap -->
-        <button onclick="lockApp()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 transition" title="Oturumu Kapat ve Kilitle">
+        <button onclick="lockApp()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 transition">
           <i data-lucide="lock" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Kilitle</span>
         </button>
@@ -99,84 +82,73 @@
 
   <!-- Ana İçerik -->
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-
-    <!-- Özet Kartları -->
     <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
           <span>Toplam Vana Stoğu</span>
-          <i data-lucide="package" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+          <i data-lucide="package" class="w-5 h-5 text-blue-600"></i>
         </div>
         <p id="totalStockCount" class="text-2xl sm:text-3xl font-bold mt-2">0</p>
-        <p class="text-xs text-slate-400 mt-1">Tüm boyutların toplamı</p>
       </div>
-
       <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
-          <span>Stokta Olan Boyutlar</span>
+          <span>Stokta Olanlar</span>
           <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
         </div>
         <p id="activeSizesCount" class="text-2xl sm:text-3xl font-bold mt-2">0 / 8</p>
-        <p class="text-xs text-slate-400 mt-1">Adedi sıfırdan büyük olanlar</p>
       </div>
-
       <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
-          <span>Tükenen Boyutlar</span>
+          <span>Tükenenler</span>
           <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500"></i>
         </div>
-        <p id="zeroStockCount" class="text-2xl sm:text-3xl font-bold mt-2 text-amber-600 dark:text-amber-400">8</p>
-        <p class="text-xs text-slate-400 mt-1">Stokta 0 adet olanlar</p>
+        <p id="zeroStockCount" class="text-2xl sm:text-3xl font-bold mt-2 text-amber-600">8</p>
       </div>
-
       <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
-          <span>Toplam Hareket</span>
+          <span>Toplam İşlem</span>
           <i data-lucide="history" class="w-5 h-5 text-indigo-500"></i>
         </div>
         <p id="totalTransactions" class="text-2xl sm:text-3xl font-bold mt-2">0</p>
-        <p id="lastUpdateText" class="text-xs text-slate-400 mt-1 truncate">Henüz işlem yapılmadı</p>
       </div>
     </section>
 
-    <!-- Vana Boyutları Grid Alanı -->
     <section>
       <div class="mb-4">
         <h2 class="text-lg font-bold">Vana Boyutları ve Hızlı Stok Güncelleme</h2>
-        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Miktar girip <b>+ Arttır</b> veya <b>- Azalt</b> butonlarıyla anlık stok güncelleyebilirsiniz.</p>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Miktar girip <b>+ Arttır</b> veya <b>- Azalt</b> butonlarını kullanabilirsiniz.</p>
       </div>
       <div id="valveGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
     </section>
 
-    <!-- Açıklamalı Stok Hareketi & Geçmiş Bölümü -->
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm h-fit">
         <div class="flex items-center gap-2 mb-4">
-          <i data-lucide="clipboard-signature" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+          <i data-lucide="clipboard-signature" class="w-5 h-5 text-blue-600"></i>
           <h3 class="font-bold text-base">Açıklamalı Stok İşlemi</h3>
         </div>
         <form onsubmit="handleDetailedSubmit(event)" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Vana Boyutu</label>
-            <select id="formSize" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Vana Boyutu</label>
+            <select id="formSize" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm font-medium focus:outline-none"></select>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">İşlem Türü</label>
-              <select id="formType" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">İşlem Türü</label>
+              <select id="formType" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm font-medium focus:outline-none">
                 <option value="in">Stok Girişi (+)</option>
                 <option value="out">Stok Çıkışı (-)</option>
                 <option value="set">Sayım Sabitle (=)</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Adet</label>
-              <input type="number" id="formAmount" min="0" required placeholder="Örn: 25" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Adet</label>
+              <input type="number" id="formAmount" min="0" required placeholder="Örn: 25" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm font-medium focus:outline-none">
             </div>
           </div>
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Açıklama / Firma / Not</label>
-            <input type="text" id="formNote" placeholder="Örn: X Firması sevkiyatı..." class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Açıklama / Not</label>
+            <input type="text" id="formNote" placeholder="Örn: X Firması..." class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm focus:outline-none">
           </div>
           <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-sm transition flex items-center justify-center gap-2 text-sm">
             <i data-lucide="save" class="w-4 h-4"></i>
@@ -186,23 +158,22 @@
       </div>
 
       <div class="lg:col-span-2 bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <div class="flex items-center justify-between gap-3 mb-4">
           <div class="flex items-center gap-2">
-            <i data-lucide="list-ordered" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+            <i data-lucide="list-ordered" class="w-5 h-5 text-blue-600"></i>
             <h3 class="font-bold text-base">Son Stok Hareketleri</h3>
           </div>
           <div class="flex items-center gap-2">
             <select id="filterHistorySize" onchange="renderHistory()" class="rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-1.5 text-xs font-medium focus:outline-none">
               <option value="ALL">Tüm Boyutlar</option>
             </select>
-            <button onclick="clearHistory()" class="text-xs text-rose-600 dark:text-rose-400 hover:underline px-2 py-1">Geçmişi Temizle</button>
+            <button onclick="clearHistory()" class="text-xs text-rose-600 hover:underline px-2 py-1">Geçmişi Temizle</button>
           </div>
         </div>
-
         <div class="overflow-x-auto flex-1">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">
+              <tr class="border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 uppercase">
                 <th class="py-3 px-3">Tarih / Saat</th>
                 <th class="py-3 px-3">Boyut</th>
                 <th class="py-3 px-3">İşlem</th>
@@ -217,7 +188,6 @@
     </section>
   </main>
 
-  <!-- Bildirim (Toast) -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 hidden bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-lg flex items-center gap-2.5 text-sm font-medium">
     <span id="toastMessage">İşlem başarılı</span>
   </div>
@@ -230,11 +200,45 @@
 
     let appState = { stocks: {}, history: [] };
 
-    function initApp() {
-      if (localStorage.getItem("vana_theme") === "dark") {
-        document.documentElement.classList.add("dark");
-      }
+    // Vana kutularını sayfa ömrü boyunca SADECE BİR KEZ oluşturuyoruz. Asla silinip yeniden çizilmez.
+    function buildValveGridOnce() {
+      const grid = document.getElementById("valveGrid");
+      grid.innerHTML = "";
+      VALVE_SIZES.forEach(size => {
+        const safeId = size.replace(" ", "-");
+        grid.innerHTML += `
+          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-lg font-bold text-blue-600">${size}</span>
+                <div class="flex items-center gap-1.5">
+                  <span id="badge-${safeId}" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">Stok Yok</span>
+                  <button onclick="promptSetStock('${size}')" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                </div>
+              </div>
+              <div class="my-4 flex items-baseline gap-2">
+                <span id="count-${safeId}" class="text-4xl font-extrabold">0</span>
+                <span class="text-xs font-medium text-slate-400 uppercase">Adet</span>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-2.5">
+              <input type="number" id="input-${safeId}" min="1" placeholder="Miktar girin..." class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="handleQuickAction('${size}', 'in')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition">
+                  <i data-lucide="plus" class="w-4 h-4"></i><span>Arttır</span>
+                </button>
+                <button onclick="handleQuickAction('${size}', 'out')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition">
+                  <i data-lucide="minus" class="w-4 h-4"></i><span>Azalt</span>
+                </button>
+              </div>
+            </div>
+          </div>`;
+      });
+      lucide.createIcons();
+    }
 
+    function initApp() {
+      if (localStorage.getItem("vana_theme") === "dark") document.documentElement.classList.add("dark");
       VALVE_SIZES.forEach(size => { appState.stocks[size] = 0; });
 
       const formSizeSelect = document.getElementById("formSize");
@@ -244,7 +248,8 @@
         filterSelect.innerHTML += `<option value="${size}">${size}</option>`;
       });
 
-      // Kilit kontrolü: Daha önce şifre girildiyse ekranı aç
+      buildValveGridOnce();
+
       const savedKey = localStorage.getItem(SECRET_KEY_STORAGE);
       if (savedKey) {
         document.getElementById("lockScreen").classList.add("hidden");
@@ -253,8 +258,7 @@
         document.getElementById("loginFirebaseUrl").value = getCloudUrl();
       }
 
-      lucide.createIcons();
-
+      // Arka planda 10 saniyede bir veri kontrolü (Kutular sabit olduğu için imleç asla kaybolmaz)
       setInterval(() => {
         if (localStorage.getItem(SECRET_KEY_STORAGE) && getCloudUrl()) {
           fetchFromCloud(true);
@@ -266,19 +270,15 @@
       e.preventDefault();
       const secret = document.getElementById("loginSecretKey").value.trim().replace(/[.#$\[\]\/]/g, "_");
       const fbUrl = document.getElementById("loginFirebaseUrl").value.trim();
-
       if (!secret) return;
 
       localStorage.setItem(SECRET_KEY_STORAGE, secret);
-      if (fbUrl) {
-        localStorage.setItem(CLOUD_URL_KEY, fbUrl);
-      } else {
-        localStorage.removeItem(CLOUD_URL_KEY);
-      }
+      if (fbUrl) localStorage.setItem(CLOUD_URL_KEY, fbUrl);
+      else localStorage.removeItem(CLOUD_URL_KEY);
 
       document.getElementById("lockScreen").classList.add("hidden");
       loadData();
-      showToast("Giriş başarılı, veriler yüklendi.");
+      showToast("Giriş başarılı.");
     }
 
     function lockApp() {
@@ -309,35 +309,30 @@
           appState.history = Array.isArray(parsed.history) ? parsed.history : [];
         } catch (e) {}
       }
-      renderAll();
+      renderValues();
 
-      if (getSecretEndpoint()) {
-        await fetchFromCloud();
-      } else {
-        updateSyncIndicator(false);
-      }
+      if (getSecretEndpoint()) await fetchFromCloud();
+      else updateSyncIndicator(false);
     }
 
     async function fetchFromCloud(silent = false) {
       const endpoint = getSecretEndpoint();
       if (!endpoint) return;
-
       try {
         const res = await fetch(endpoint);
-        if (!res.ok) throw new Error("Bağlantı reddedildi");
+        if (!res.ok) throw new Error();
         const data = await res.json();
         if (data && data.stocks) {
           VALVE_SIZES.forEach(size => { appState.stocks[size] = Number(data.stocks[size]) || 0; });
           appState.history = Array.isArray(data.history) ? data.history : [];
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-          renderAll();
+          renderValues();
         } else {
           await pushToCloud();
         }
         updateSyncIndicator(true);
       } catch (err) {
         updateSyncIndicator(false, true);
-        if (!silent) showToast("Bulut bağlantı hatası, yerel hafıza kullanılıyor.");
       }
     }
 
@@ -361,20 +356,20 @@
       const text = document.getElementById("syncStatusText");
       if (hasError) {
         dot.className = "w-2 h-2 rounded-full bg-rose-500";
-        text.textContent = "Bulut Hatası (Yerel Kayıt)";
+        text.textContent = "Bulut Hatası";
       } else if (isCloud) {
         dot.className = "w-2 h-2 rounded-full bg-blue-500 animate-pulse";
-        text.textContent = "Şifreli Bulut Senkronizasyonu Aktif";
+        text.textContent = "Senkronizasyon Aktif";
       } else {
         dot.className = "w-2 h-2 rounded-full bg-emerald-500";
-        text.textContent = "Yerel Hafıza Modu Aktif";
+        text.textContent = "Yerel Mod";
       }
     }
 
     function saveData() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       if (getSecretEndpoint()) pushToCloud();
-      renderAll();
+      renderValues();
     }
 
     function updateStock(size, type, amount, note = "") {
@@ -405,12 +400,12 @@
         type: type,
         amount: amount,
         remaining: newQty,
-        note: note || (type === "in" ? "Hızlı Stok Girişi" : type === "out" ? "Hızlı Stok Çıkışı" : "Stok Sabitleme")
+        note: note || (type === "in" ? "Hızlı Giriş" : type === "out" ? "Hızlı Çıkış" : "Sabitleme")
       });
 
       if (appState.history.length > 200) appState.history.pop();
       saveData();
-      showToast(`${size} stoğu güncellendi: ${newQty} Adet`);
+      showToast(`${size} güncellendi: ${newQty} Adet`);
       return true;
     }
 
@@ -418,7 +413,7 @@
       const inputEl = document.getElementById(`input-${size.replace(" ", "-")}`);
       const val = parseInt(inputEl.value, 10);
       if (isNaN(val) || val <= 0) {
-        showToast("Lütfen geçerli bir adet girin.");
+        showToast("Geçerli bir adet girin.");
         inputEl.focus();
         return;
       }
@@ -430,7 +425,7 @@
       const input = prompt(`${size} için yeni net stok adedini girin:`, current);
       if (input !== null && input.trim() !== "") {
         const val = parseInt(input, 10);
-        if (!isNaN(val) && val >= 0) updateStock(size, "set", val, "Manuel Stok Sabitleme");
+        if (!isNaN(val) && val >= 0) updateStock(size, "set", val, "Manuel Sabitleme");
       }
     }
 
@@ -446,10 +441,22 @@
       }
     }
 
-    function renderAll() {
+    // Yalnızca sayıları ve etiketleri günceller; input kutularına asla dokunmaz
+    function renderValues() {
       let total = 0, activeSizes = 0, zeroSizes = 0;
       VALVE_SIZES.forEach(size => {
         const count = appState.stocks[size] || 0;
+        const safeId = size.replace(" ", "-");
+        const countEl = document.getElementById(`count-${safeId}`);
+        const badgeEl = document.getElementById(`badge-${safeId}`);
+        
+        if (countEl) countEl.textContent = count.toLocaleString("tr-TR");
+        if (badgeEl) {
+          const isZero = count === 0;
+          badgeEl.className = `text-xs font-semibold px-2.5 py-1 rounded-full ${isZero ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`;
+          badgeEl.textContent = isZero ? "Stok Yok" : "Mevcut";
+        }
+
         total += count;
         if (count > 0) activeSizes++; else zeroSizes++;
       });
@@ -458,53 +465,8 @@
       document.getElementById("activeSizesCount").textContent = `${activeSizes} / ${VALVE_SIZES.length}`;
       document.getElementById("zeroStockCount").textContent = zeroSizes;
       document.getElementById("totalTransactions").textContent = appState.history.length;
-      document.getElementById("lastUpdateText").textContent = appState.history.length > 0
-        ? `Son: ${appState.history[0].size} (${appState.history[0].date})`
-        : "Henüz işlem yapılmadı";
-
-      const grid = document.getElementById("valveGrid");
-      grid.innerHTML = "";
-      VALVE_SIZES.forEach(size => {
-        const count = appState.stocks[size] || 0;
-        const safeId = size.replace(" ", "-");
-        const isZero = count === 0;
-        const badgeClass = isZero
-          ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
-          : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300";
-
-        grid.innerHTML += `
-          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between">
-                <span class="text-lg font-bold text-blue-600 dark:text-blue-400">${size}</span>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeClass}">${isZero ? "Stok Yok" : "Stokta Mevcut"}</span>
-                  <button onclick="promptSetStock('${size}')" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg" title="Doğrudan Belirle">
-                    <i data-lucide="edit-3" class="w-4 h-4"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="my-4 flex items-baseline gap-2">
-                <span class="text-4xl font-extrabold">${count.toLocaleString("tr-TR")}</span>
-                <span class="text-xs font-medium text-slate-400 uppercase">Adet</span>
-              </div>
-            </div>
-            <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-2.5">
-              <input type="number" id="input-${safeId}" min="1" placeholder="Miktar girin..." class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <div class="grid grid-cols-2 gap-2">
-                <button onclick="handleQuickAction('${size}', 'in')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm transition">
-                  <i data-lucide="plus" class="w-4 h-4"></i><span>Arttır</span>
-                </button>
-                <button onclick="handleQuickAction('${size}', 'out')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm transition">
-                  <i data-lucide="minus" class="w-4 h-4"></i><span>Azalt</span>
-                </button>
-              </div>
-            </div>
-          </div>`;
-      });
 
       renderHistory();
-      lucide.createIcons();
     }
 
     function renderHistory() {
@@ -514,16 +476,14 @@
       const filtered = filterSize === "ALL" ? appState.history : appState.history.filter(i => i.size === filterSize);
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 text-sm">Kayıtlı stok hareketi bulunmuyor.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 text-sm">Kayıt bulunmuyor.</td></tr>`;
         return;
       }
 
       filtered.slice(0, 50).forEach(item => {
-        const badge = item.type === "in"
-          ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">+${item.amount} Giriş</span>`
-          : item.type === "out"
-          ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">-${item.amount} Çıkış</span>`
-          : `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">=${item.amount} Sabitlendi</span>`;
+        const badge = item.type === "in" ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">+${item.amount} Giriş</span>` :
+                      item.type === "out" ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">-${item.amount} Çıkış</span>` :
+                      `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">=${item.amount} Sabit</span>`;
 
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/30">
@@ -537,7 +497,7 @@
     }
 
     function clearHistory() {
-      if (confirm("Sadece işlem geçmişi silinecek. Onaylıyor musunuz?")) {
+      if (confirm("İşlem geçmişi silinsin mi?")) {
         appState.history = [];
         saveData();
       }
@@ -546,15 +506,10 @@
     function exportToCSV() {
       let csv = "\uFEFFVANA GÜNCEL STOK DURUMU\nVana Boyutu;Güncel Adet\n";
       VALVE_SIZES.forEach(s => { csv += `${s};${appState.stocks[s] || 0}\n`; });
-      csv += "\nSTOK HAREKET GEÇMİŞİ\nTarih;Boyut;İşlem Türü;Miktar;Kalan Stok;Açıklama\n";
-      appState.history.forEach(h => {
-        const t = h.type === "in" ? "Giriş (+)" : h.type === "out" ? "Çıkış (-)" : "Sabitleme (=)";
-        csv += `${h.date};${h.size};${t};${h.amount};${h.remaining};${h.note}\n`;
-      });
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `Vana_Stok_Raporu_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `Vana_Stok_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
     }
 
