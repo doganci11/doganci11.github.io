@@ -95,14 +95,14 @@
           <span>Stokta Olanlar</span>
           <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500"></i>
         </div>
-        <p id="activeSizesCount" class="text-2xl sm:text-3xl font-bold mt-2">0 / 8</p>
+        <p id="activeSizesCount" class="text-2xl sm:text-3xl font-bold mt-2">0 / 16</p>
       </div>
       <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
           <span>Tükenenler</span>
           <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-500"></i>
         </div>
-        <p id="zeroStockCount" class="text-2xl sm:text-3xl font-bold mt-2 text-amber-600">8</p>
+        <p id="zeroStockCount" class="text-2xl sm:text-3xl font-bold mt-2 text-amber-600">16</p>
       </div>
       <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
@@ -113,12 +113,22 @@
       </div>
     </section>
 
+    <!-- KÜRESEL TAM GEÇİŞLİ VANA BÖLÜMÜ -->
     <section>
       <div class="mb-4">
-        <h2 class="text-lg font-bold">Vana Boyutları ve Hızlı Stok Güncelleme</h2>
+        <h2 class="text-lg font-bold">Küresel Tam Geçişli Vana</h2>
         <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Miktar girip <b>+ Arttır</b> veya <b>- Azalt</b> butonlarını kullanabilirsiniz.</p>
       </div>
       <div id="valveGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+    </section>
+
+    <!-- PİSLİK TUTUCU BÖLÜMÜ -->
+    <section>
+      <div class="mb-4">
+        <h2 class="text-lg font-bold">Pislik Tutucu</h2>
+        <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Miktar girip <b>+ Arttır</b> veya <b>- Azalt</b> butonlarını kullanabilirsiniz.</p>
+      </div>
+      <div id="strainerGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
     </section>
 
     <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -129,7 +139,7 @@
         </div>
         <form onsubmit="handleDetailedSubmit(event)" class="space-y-4">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Vana Boyutu</label>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Model / Boyut</label>
             <select id="formSize" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3.5 py-2.5 text-sm font-medium focus:outline-none"></select>
           </div>
           <div class="grid grid-cols-2 gap-3">
@@ -165,7 +175,7 @@
           </div>
           <div class="flex items-center gap-2">
             <select id="filterHistorySize" onchange="renderHistory()" class="rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-1.5 text-xs font-medium focus:outline-none">
-              <option value="ALL">Tüm Boyutlar</option>
+              <option value="ALL">Tüm Modeller</option>
             </select>
             <button onclick="clearHistory()" class="text-xs text-rose-600 hover:underline px-2 py-1">Geçmişi Temizle</button>
           </div>
@@ -175,7 +185,7 @@
             <thead>
               <tr class="border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 uppercase">
                 <th class="py-3 px-3">Tarih / Saat</th>
-                <th class="py-3 px-3">Boyut</th>
+                <th class="py-3 px-3">Model / Boyut</th>
                 <th class="py-3 px-3">İşlem</th>
                 <th class="py-3 px-3">Kalan Stok</th>
                 <th class="py-3 px-3">Açıklama</th>
@@ -193,27 +203,59 @@
   </div>
 
   <script>
-    const VALVE_SIZES = ["DN 40", "DN 50", "DN 65", "DN 80", "DN 100", "DN 125", "DN 150", "DN 200"];
+    const BASE_SIZES = ["DN 40", "DN 50", "DN 65", "DN 80", "DN 100", "DN 125", "DN 150", "DN 200"];
+    
+    // Mevcut verilerin kaybolmaması için Küresel Tam Geçişli Vana anahtarları eskiyle birebir aynı ("DN 40" vb.) tutuldu.
+    const PRODUCTS = [
+      ...BASE_SIZES.map(s => ({
+        key: s,
+        size: s,
+        category: "Küresel Tam Geçişli Vana",
+        fullName: `Küresel Tam Geçişli Vana - ${s}`,
+        gridId: "valveGrid"
+      })),
+      ...BASE_SIZES.map(s => ({
+        key: `PT ${s}`,
+        size: s,
+        category: "Pislik Tutucu",
+        fullName: `Pislik Tutucu - ${s}`,
+        gridId: "strainerGrid"
+      }))
+    ];
+
     const STORAGE_KEY = "vana_stok_verisi_v1";
     const CLOUD_URL_KEY = "vana_firebase_url";
     const SECRET_KEY_STORAGE = "vana_secret_key";
 
     let appState = { stocks: {}, history: [] };
 
-    // Vana kutularını sayfa ömrü boyunca SADECE BİR KEZ oluşturuyoruz. Asla silinip yeniden çizilmez.
-    function buildValveGridOnce() {
-      const grid = document.getElementById("valveGrid");
-      grid.innerHTML = "";
-      VALVE_SIZES.forEach(size => {
-        const safeId = size.replace(" ", "-");
-        grid.innerHTML += `
+    function getSafeId(key) {
+      return key.replace(/\s+/g, "-");
+    }
+
+    function getProductFullName(key) {
+      const found = PRODUCTS.find(p => p.key === key);
+      return found ? found.fullName : key;
+    }
+
+    // Kartları sayfa açıldığında yalnızca bir kez oluşturuyoruz (İmleç odak kaybını önler)
+    function buildGridsOnce() {
+      const valveGrid = document.getElementById("valveGrid");
+      const strainerGrid = document.getElementById("strainerGrid");
+      valveGrid.innerHTML = "";
+      strainerGrid.innerHTML = "";
+
+      PRODUCTS.forEach(item => {
+        const safeId = getSafeId(item.key);
+        const targetGrid = document.getElementById(item.gridId);
+        targetGrid.innerHTML += `
           <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between">
-                <span class="text-lg font-bold text-blue-600">${size}</span>
+                <span class="text-lg font-bold text-blue-600">${item.size}</span>
                 <div class="flex items-center gap-1.5">
                   <span id="badge-${safeId}" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">Stok Yok</span>
-                  <button onclick="promptSetStock('${size}')" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                  <button onclick="promptSetStock('${item.key}')" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
                 </div>
               </div>
               <div class="my-4 flex items-baseline gap-2">
@@ -224,10 +266,10 @@
             <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 space-y-2.5">
               <input type="number" id="input-${safeId}" min="1" placeholder="Miktar girin..." class="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
               <div class="grid grid-cols-2 gap-2">
-                <button onclick="handleQuickAction('${size}', 'in')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition">
+                <button onclick="handleQuickAction('${item.key}', 'in')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition">
                   <i data-lucide="plus" class="w-4 h-4"></i><span>Arttır</span>
                 </button>
-                <button onclick="handleQuickAction('${size}', 'out')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition">
+                <button onclick="handleQuickAction('${item.key}', 'out')" class="flex items-center justify-center gap-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs transition">
                   <i data-lucide="minus" class="w-4 h-4"></i><span>Azalt</span>
                 </button>
               </div>
@@ -239,16 +281,28 @@
 
     function initApp() {
       if (localStorage.getItem("vana_theme") === "dark") document.documentElement.classList.add("dark");
-      VALVE_SIZES.forEach(size => { appState.stocks[size] = 0; });
+      PRODUCTS.forEach(p => { appState.stocks[p.key] = 0; });
 
       const formSizeSelect = document.getElementById("formSize");
       const filterSelect = document.getElementById("filterHistorySize");
-      VALVE_SIZES.forEach(size => {
-        formSizeSelect.innerHTML += `<option value="${size}">${size}</option>`;
-        filterSelect.innerHTML += `<option value="${size}">${size}</option>`;
+
+      const categories = ["Küresel Tam Geçişli Vana", "Pislik Tutucu"];
+      categories.forEach(cat => {
+        const optGroupForm = document.createElement("optgroup");
+        optGroupForm.label = cat;
+        const optGroupFilter = document.createElement("optgroup");
+        optGroupFilter.label = cat;
+
+        PRODUCTS.filter(p => p.category === cat).forEach(p => {
+          optGroupForm.innerHTML += `<option value="${p.key}">${p.fullName}</option>`;
+          optGroupFilter.innerHTML += `<option value="${p.key}">${p.fullName}</option>`;
+        });
+
+        formSizeSelect.appendChild(optGroupForm);
+        filterSelect.appendChild(optGroupFilter);
       });
 
-      buildValveGridOnce();
+      buildGridsOnce();
 
       const savedKey = localStorage.getItem(SECRET_KEY_STORAGE);
       if (savedKey) {
@@ -258,7 +312,6 @@
         document.getElementById("loginFirebaseUrl").value = getCloudUrl();
       }
 
-      // Arka planda 10 saniyede bir veri kontrolü (Kutular sabit olduğu için imleç asla kaybolmaz)
       setInterval(() => {
         if (localStorage.getItem(SECRET_KEY_STORAGE) && getCloudUrl()) {
           fetchFromCloud(true);
@@ -305,7 +358,7 @@
       if (savedLocal) {
         try {
           const parsed = JSON.parse(savedLocal);
-          VALVE_SIZES.forEach(size => { appState.stocks[size] = Number(parsed.stocks?.[size]) || 0; });
+          PRODUCTS.forEach(p => { appState.stocks[p.key] = Number(parsed.stocks?.[p.key]) || 0; });
           appState.history = Array.isArray(parsed.history) ? parsed.history : [];
         } catch (e) {}
       }
@@ -323,7 +376,7 @@
         if (!res.ok) throw new Error();
         const data = await res.json();
         if (data && data.stocks) {
-          VALVE_SIZES.forEach(size => { appState.stocks[size] = Number(data.stocks[size]) || 0; });
+          PRODUCTS.forEach(p => { appState.stocks[p.key] = Number(data.stocks[p.key]) || 0; });
           appState.history = Array.isArray(data.history) ? data.history : [];
           localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
           renderValues();
@@ -372,31 +425,32 @@
       renderValues();
     }
 
-    function updateStock(size, type, amount, note = "") {
+    function updateStock(key, type, amount, note = "") {
       amount = parseInt(amount, 10);
       if (isNaN(amount) || amount < 0) return false;
       if ((type === "in" || type === "out") && amount === 0) return false;
 
-      const currentQty = appState.stocks[size] || 0;
+      const currentQty = appState.stocks[key] || 0;
       let newQty = currentQty;
+      const fullName = getProductFullName(key);
 
       if (type === "in") newQty = currentQty + amount;
       else if (type === "out") {
         if (amount > currentQty) {
-          showToast(`Hata: ${size} stoğunda sadece ${currentQty} adet var!`);
+          showToast(`Hata: ${fullName} stoğunda sadece ${currentQty} adet var!`);
           return false;
         }
         newQty = currentQty - amount;
       } else if (type === "set") newQty = amount;
 
-      appState.stocks[size] = newQty;
+      appState.stocks[key] = newQty;
       const now = new Date();
       const formattedDate = now.toLocaleDateString("tr-TR") + " " + now.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
 
       appState.history.unshift({
         id: Date.now(),
         date: formattedDate,
-        size: size,
+        size: key,
         type: type,
         amount: amount,
         remaining: newQty,
@@ -405,48 +459,49 @@
 
       if (appState.history.length > 200) appState.history.pop();
       saveData();
-      showToast(`${size} güncellendi: ${newQty} Adet`);
+      showToast(`${fullName} güncellendi: ${newQty} Adet`);
       return true;
     }
 
-    function handleQuickAction(size, type) {
-      const inputEl = document.getElementById(`input-${size.replace(" ", "-")}`);
+    function handleQuickAction(key, type) {
+      const safeId = getSafeId(key);
+      const inputEl = document.getElementById(`input-${safeId}`);
       const val = parseInt(inputEl.value, 10);
       if (isNaN(val) || val <= 0) {
         showToast("Geçerli bir adet girin.");
         inputEl.focus();
         return;
       }
-      if (updateStock(size, type, val)) inputEl.value = "";
+      if (updateStock(key, type, val)) inputEl.value = "";
     }
 
-    function promptSetStock(size) {
-      const current = appState.stocks[size] || 0;
-      const input = prompt(`${size} için yeni net stok adedini girin:`, current);
+    function promptSetStock(key) {
+      const current = appState.stocks[key] || 0;
+      const fullName = getProductFullName(key);
+      const input = prompt(`${fullName} için yeni net stok adedini girin:`, current);
       if (input !== null && input.trim() !== "") {
         const val = parseInt(input, 10);
-        if (!isNaN(val) && val >= 0) updateStock(size, "set", val, "Manuel Sabitleme");
+        if (!isNaN(val) && val >= 0) updateStock(key, "set", val, "Manuel Sabitleme");
       }
     }
 
     function handleDetailedSubmit(e) {
       e.preventDefault();
-      const size = document.getElementById("formSize").value;
+      const key = document.getElementById("formSize").value;
       const type = document.getElementById("formType").value;
       const amount = document.getElementById("formAmount").value;
       const note = document.getElementById("formNote").value.trim();
-      if (updateStock(size, type, amount, note)) {
+      if (updateStock(key, type, amount, note)) {
         document.getElementById("formAmount").value = "";
         document.getElementById("formNote").value = "";
       }
     }
 
-    // Yalnızca sayıları ve etiketleri günceller; input kutularına asla dokunmaz
     function renderValues() {
       let total = 0, activeSizes = 0, zeroSizes = 0;
-      VALVE_SIZES.forEach(size => {
-        const count = appState.stocks[size] || 0;
-        const safeId = size.replace(" ", "-");
+      PRODUCTS.forEach(item => {
+        const count = appState.stocks[item.key] || 0;
+        const safeId = getSafeId(item.key);
         const countEl = document.getElementById(`count-${safeId}`);
         const badgeEl = document.getElementById(`badge-${safeId}`);
         
@@ -462,7 +517,7 @@
       });
 
       document.getElementById("totalStockCount").textContent = total.toLocaleString("tr-TR");
-      document.getElementById("activeSizesCount").textContent = `${activeSizes} / ${VALVE_SIZES.length}`;
+      document.getElementById("activeSizesCount").textContent = `${activeSizes} / ${PRODUCTS.length}`;
       document.getElementById("zeroStockCount").textContent = zeroSizes;
       document.getElementById("totalTransactions").textContent = appState.history.length;
 
@@ -488,7 +543,7 @@
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50/80 dark:hover:bg-slate-700/30">
             <td class="py-3 px-3 text-xs text-slate-500 whitespace-nowrap">${item.date}</td>
-            <td class="py-3 px-3 font-bold whitespace-nowrap">${item.size}</td>
+            <td class="py-3 px-3 font-bold whitespace-nowrap">${getProductFullName(item.size)}</td>
             <td class="py-3 px-3 whitespace-nowrap">${badge}</td>
             <td class="py-3 px-3 font-semibold whitespace-nowrap">${item.remaining} Adet</td>
             <td class="py-3 px-3 text-xs text-slate-600 dark:text-slate-300">${item.note}</td>
@@ -504,8 +559,10 @@
     }
 
     function exportToCSV() {
-      let csv = "\uFEFFVANA GÜNCEL STOK DURUMU\nVana Boyutu;Güncel Adet\n";
-      VALVE_SIZES.forEach(s => { csv += `${s};${appState.stocks[s] || 0}\n`; });
+      let csv = "\uFEFFVANA GÜNCEL STOK DURUMU\nKategori;Boyut;Güncel Adet\n";
+      PRODUCTS.forEach(p => {
+        csv += `${p.category};${p.size};${appState.stocks[p.key] || 0}\n`;
+      });
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
